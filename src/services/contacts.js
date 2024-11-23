@@ -11,3 +11,24 @@ export const getContactById = async (contactId) => {
   const contact = await Contact.findById(contactId); // Ищем контакт по ID
   return contact;
 };
+
+export const createContact = async (payload) => {
+  const contact = await Contact.create(payload);
+  return contact;
+};
+
+export const updateContact = async (contactId, payload) => {
+  const updatedContact = await Contact.findByIdAndUpdate(contactId, payload, {
+    new: true,
+  });
+
+  return updatedContact;
+};
+
+export const deleteContact = async (contactId) => {
+  const contact = await Contact.findOneAndDelete({
+    _id: contactId,
+  });
+
+  return contact;
+};
