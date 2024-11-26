@@ -8,13 +8,45 @@ import {
 import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 
-export const getContactsController = async (req, res) => {
-  const contacts = await getContacts();
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully found contacts!',
-    data: contacts,
-  });
+export const getContactsController = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const perPage = parseInt(req.query.perPage, 10) || 10;
+    const sortBy = req.query.sortBy || 'name';
+    const sortOrder = req.query.sortOrder || 'asc';
+
+    const filter = {};
+    if (req.query.isFavourite !== undefined) {
+      filter.isFavourite = req.query.isFavourite === 'true';
+    }
+    if (req.query.contactType) {
+      filter.contactType = req.query.contactType;
+    }
+
+    const result = await getContacts({
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+      filter,
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully found contacts!',
+      data: {
+        data: result.contacts,
+        page: result.page,
+        perPage: result.perPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+        hasPreviousPage: result.hasPreviousPage,
+        hasNextPage: result.hasNextPage,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getContactByIdController = async (req, res) => {
