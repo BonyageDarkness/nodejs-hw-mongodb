@@ -1,9 +1,47 @@
-import { Contact } from '../db/models/contact.js'; // Модель контактов
+import { Contact } from '../db/models/contact.js';
 
-// Получить все контакты
-export const getContacts = async () => {
-  const contacts = await Contact.find(); // Получаем все контакты
-  return contacts;
+// Получить все контакты с пагинацией
+export const getContacts = async ({
+  page = 1,
+  perPage = 10,
+  sortBy = 'name',
+  sortOrder = 'asc',
+  filter = {},
+}) => {
+  const limit = perPage;
+  const skip = (page - 1) * perPage;
+
+  const contactsQuery = Contact.find();
+
+  if (filter.isFavourite !== undefined) {
+    contactsQuery.where('isFavourite').equals(filter.isFavourite);
+  }
+  if (filter.contactType) {
+    contactsQuery.where('contactType').equals(filter.contactType);
+  }
+
+  const sortDirection = sortOrder === 'desc' ? -1 : 1;
+
+  const [totalItems, contacts] = await Promise.all([
+    Contact.countDocuments(contactsQuery.getFilter()),
+    contactsQuery
+      .sort({ [sortBy]: sortDirection })
+      .skip(skip)
+      .limit(limit)
+      .exec(),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / perPage);
+
+  return {
+    contacts,
+    page,
+    perPage,
+    totalItems,
+    totalPages,
+    hasPreviousPage: page > 1,
+    hasNextPage: page < totalPages,
+  };
 };
 
 // Получить контакт по ID
