@@ -2,56 +2,50 @@ import { Contact } from '../db/models/contact.js';
 
 // Получить все контакты с пагинацией
 export const getContacts = async ({
-  page = 1,
-  perPage = 10,
-  sortBy = 'name',
-  sortOrder = 'asc',
-  filter = {},
+  page,
+  perPage,
+  sortBy,
+  sortOrder,
+  filter,
 }) => {
-  const limit = perPage;
-  const skip = (page - 1) * perPage;
+  try {
+    const contacts = await Contact.find(filter)
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 });
 
-  const contactsQuery = Contact.find();
+    const totalItems = await Contact.countDocuments(filter);
 
-  if (filter.isFavourite !== undefined) {
-    contactsQuery.where('isFavourite').equals(filter.isFavourite);
+    const totalPages = Math.ceil(totalItems / perPage);
+    const hasPreviousPage = page > 1;
+    const hasNextPage = page < totalPages;
+
+    return {
+      contacts,
+      page,
+      perPage,
+      totalItems,
+      totalPages,
+      hasPreviousPage,
+      hasNextPage,
+    };
+  } catch (error) {
+    console.error('Error in getContacts:', error);
+    throw error;
   }
-  if (filter.contactType) {
-    contactsQuery.where('contactType').equals(filter.contactType);
-  }
-
-  const sortDirection = sortOrder === 'desc' ? -1 : 1;
-
-  const [totalItems, contacts] = await Promise.all([
-    Contact.countDocuments(contactsQuery.getFilter()),
-    contactsQuery
-      .sort({ [sortBy]: sortDirection })
-      .skip(skip)
-      .limit(limit)
-      .exec(),
-  ]);
-
-  const totalPages = Math.ceil(totalItems / perPage);
-
-  return {
-    contacts,
-    page,
-    perPage,
-    totalItems,
-    totalPages,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < totalPages,
-  };
 };
 
 // Получить контакт по ID
-export const getContactById = async (contactId) => {
-  const contact = await Contact.findById(contactId); // Ищем контакт по ID
+export const getContactById = async (contactId, userId) => {
+  const contact = await Contact.findOne({ _id: contactId, userId }); // Ищем контакт по ID
   return contact;
 };
 
-export const createContact = async (payload) => {
-  const contact = await Contact.create(payload);
+export const createContact = async (payload, userId) => {
+  const contact = await Contact.create({
+    ...payload,
+    userId: userId,
+  });
   return contact;
 };
 

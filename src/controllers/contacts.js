@@ -1,3 +1,4 @@
+// src/controllers/contacts.js
 import {
   getContacts,
   getContactById,
@@ -10,18 +11,32 @@ import mongoose from 'mongoose';
 
 export const getContactsController = async (req, res, next) => {
   try {
+    console.log('Started getContactsController');
+    console.log('User:', req.user); // Логируем данные пользователя
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ status: 401, message: 'User not authenticated' });
+    }
+
+    const userId = req.user._id;
+    console.log('userId:', userId);
+
     const page = parseInt(req.query.page, 10) || 1;
     const perPage = parseInt(req.query.perPage, 10) || 10;
     const sortBy = req.query.sortBy || 'name';
     const sortOrder = req.query.sortOrder || 'asc';
 
-    const filter = {};
+    const filter = { userId };
     if (req.query.isFavourite !== undefined) {
       filter.isFavourite = req.query.isFavourite === 'true';
     }
     if (req.query.contactType) {
       filter.contactType = req.query.contactType;
     }
+
+    console.log('Filter:', filter);
 
     const result = await getContacts({
       page,
@@ -30,6 +45,7 @@ export const getContactsController = async (req, res, next) => {
       sortOrder,
       filter,
     });
+    console.log('Found contacts:', result);
 
     res.status(200).json({
       status: 200,
@@ -45,15 +61,16 @@ export const getContactsController = async (req, res, next) => {
       },
     });
   } catch (err) {
+    console.error('Error in getContactsController:', err);
     next(err);
   }
 };
 
 export const getContactByIdController = async (req, res) => {
   const { contactId } = req.params;
-  const contact = await getContactById(contactId);
+  const contact = await getContactById(contactId, req.user._id);
 
-  if (!contact) {
+  if (!contact || !contact.userId.equals(req.user._id)) {
     throw createHttpError(404, 'Contact not found');
   }
 
@@ -66,16 +83,26 @@ export const getContactByIdController = async (req, res) => {
 
 export const createContactController = async (req, res, next) => {
   try {
+    console.log('Started createContactController');
     const { name, phoneNumber, contactType } = req.body;
+    const userId = req.user._id;
 
+    console.log('Request body:', req.body); // Логируем тело запроса
+    console.log('User ID from token:', userId); // Логируем ID пользователя из токена
+
+    // Проверка обязательных полей
     if (!name || !phoneNumber || !contactType) {
+      console.log('Missing required fields'); // Логируем, если данные не полные
       throw createHttpError(
         400,
         'Missing required fields: name, phoneNumber, contactType',
       );
     }
 
-    const contact = await createContact(req.body);
+    // Попытка создать контакт
+    const contact = await createContact({ ...req.body, userId });
+
+    console.log('Created contact:', contact); // Логируем успешно созданный контакт
 
     res.status(201).json({
       status: 201,
@@ -83,7 +110,8 @@ export const createContactController = async (req, res, next) => {
       data: contact,
     });
   } catch (err) {
-    next(err); // Передаём ошибку в middleware
+    console.error('Error in createContactController:', err); // Логируем ошибку
+    next(err);
   }
 };
 
@@ -110,6 +138,7 @@ export const patchContactController = async (req, res, next) => {
     next(err);
   }
 };
+
 export const deleteContactController = async (req, res, next) => {
   try {
     const { contactId } = req.params;
