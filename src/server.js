@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import router from './routers/index.js';
 import contactsRouter from './routers/contacts.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
@@ -23,6 +25,7 @@ export const startServer = () => {
 
   app.use(cors());
   app.use(express.json());
+  app.use(cookieParser());
 
   app.get('/', (req, res) => {
     res.json({
@@ -31,6 +34,7 @@ export const startServer = () => {
   });
 
   app.use('/contacts', contactsRouter);
+  app.use('/', router);
 
   app.use('*', notFoundHandler); // Обработчик маршрутов, которые не найдены
 

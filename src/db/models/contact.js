@@ -1,27 +1,39 @@
+// src/models/contact.js
 import { model, Schema } from 'mongoose';
+import {
+  CONTACT_TYPE_PERSONAL,
+  CONTACT_TYPES,
+} from '../../constants/contacts.js';
 
-const contactsSchema = new Schema(
+const contactSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
     },
-    phoneNumber: {
+    email: {
       type: String,
       required: true,
     },
-    email: {
+    phone: {
       type: String,
+      required: true,
     },
     isFavourite: {
       type: Boolean,
+      required: true,
       default: false,
     },
     contactType: {
       type: String,
-      enum: ['work', 'home', 'personal'],
       required: true,
-      default: 'personal',
+      enum: CONTACT_TYPES,
+      default: CONTACT_TYPE_PERSONAL,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   {
@@ -30,4 +42,4 @@ const contactsSchema = new Schema(
   },
 );
 
-export const Contact = model('contacts', contactsSchema);
+export const Contact = model('Contact', contactSchema);
