@@ -41,12 +41,14 @@ export const getContactById = async (contactId, userId) => {
   return contact;
 };
 
-export const createContact = async (payload, userId) => {
-  const contact = await Contact.create({
-    ...payload,
-    userId: userId,
-  });
-  return contact;
+export const createContact = async (payload) => {
+  try {
+    const contact = await Contact.create(payload);
+    return contact;
+  } catch (error) {
+    console.error('Error creating contact:', error);
+    throw error;
+  }
 };
 
 export const updateContact = async (contactId, payload) => {

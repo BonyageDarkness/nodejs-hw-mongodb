@@ -4,7 +4,8 @@ import bcrypt from 'bcrypt';
 import { loginUser } from '../services/auth.js';
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
-import { FIFTEEN_MINUTES } from '../constants/index.js';
+import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/index.js';
+import { refreshUserSession } from '../services/auth.js';
 
 export const registerController = async (req, res, next) => {
   try {
@@ -44,7 +45,7 @@ export const loginController = async (req, res, next) => {
 
     res.cookie('sessionId', session._id, {
       httpOnly: true,
-      expires: new Date(Date.now() + FIFTEEN_MINUTES),
+      expires: new Date(Date.now() + ONE_DAY),
     });
 
     res.status(200).json({
@@ -84,37 +85,29 @@ export const refreshController = async (req, res, next) => {
       throw createHttpError(401, 'Refresh token not provided');
     }
 
-    const session = await SessionsCollection.findOne({ refreshToken });
+    const session = await refreshUserSession(refreshToken);
 
     if (!session) {
       throw createHttpError(401, 'Session not found');
     }
 
-    const newAccessToken = 'newAccessToken';
-    const newRefreshToken = 'newRefreshToken';
-
-    session.accessToken = newAccessToken;
-    session.refreshToken = newRefreshToken;
-    session.accessTokenValidUntil = new Date(Date.now() + FIFTEEN_MINUTES);
-    session.refreshTokenValidUntil = new Date(Date.now() + FIFTEEN_MINUTES);
-
-    await session.save();
-
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refreshToken', session.refreshToken, {
       httpOnly: true,
-      expires: new Date(Date.now() + FIFTEEN_MINUTES),
+      expires: new Date(session.refreshTokenValidUntil), // Используем дату из сессии
     });
 
+    // Установка sessionId в куки
     res.cookie('sessionId', session._id, {
       httpOnly: true,
-      expires: new Date(Date.now() + FIFTEEN_MINUTES),
+      expires: new Date(session.accessTokenValidUntil), // Используем дату из сессии
     });
 
+    // Возвращаем новый accessToken
     res.status(200).json({
       status: 200,
       message: 'Successfully refreshed a session!',
       data: {
-        accessToken: newAccessToken,
+        accessToken: session.accessToken,
       },
     });
   } catch (err) {
