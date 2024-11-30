@@ -83,26 +83,28 @@ export const getContactByIdController = async (req, res) => {
 
 export const createContactController = async (req, res, next) => {
   try {
-    console.log('Started createContactController');
-    const { name, phoneNumber, contactType } = req.body;
-    const userId = req.user._id;
+    const { name, phoneNumber, contactType, email, isFavourite } = req.body;
 
-    console.log('Request body:', req.body); // Логируем тело запроса
-    console.log('User ID from token:', userId); // Логируем ID пользователя из токена
-
-    // Проверка обязательных полей
     if (!name || !phoneNumber || !contactType) {
-      console.log('Missing required fields'); // Логируем, если данные не полные
       throw createHttpError(
         400,
         'Missing required fields: name, phoneNumber, contactType',
       );
     }
 
-    // Попытка создать контакт
-    const contact = await createContact({ ...req.body, userId });
+    const userId = req.user?._id;
+    if (!userId) {
+      throw createHttpError(401, 'User not authenticated');
+    }
 
-    console.log('Created contact:', contact); // Логируем успешно созданный контакт
+    const contact = await createContact({
+      name,
+      phoneNumber,
+      contactType,
+      email,
+      isFavourite,
+      userId,
+    });
 
     res.status(201).json({
       status: 201,
@@ -110,7 +112,6 @@ export const createContactController = async (req, res, next) => {
       data: contact,
     });
   } catch (err) {
-    console.error('Error in createContactController:', err); // Логируем ошибку
     next(err);
   }
 };
