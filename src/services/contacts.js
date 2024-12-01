@@ -1,4 +1,5 @@
 import { Contact } from '../db/models/contact.js';
+import createHttpError from 'http-errors';
 
 // Получить все контакты с пагинацией
 export const getContacts = async ({
@@ -51,18 +52,26 @@ export const createContact = async (payload) => {
   }
 };
 
-export const updateContact = async (contactId, payload) => {
-  const updatedContact = await Contact.findByIdAndUpdate(contactId, payload, {
-    new: true,
-  });
+export const updateContact = async (contactId, userId, payload) => {
+  const updatedContact = await Contact.findOneAndUpdate(
+    { _id: contactId, userId }, // Проверяем, что контакт принадлежит пользователю
+    payload,
+    { new: true },
+  );
+
+  if (!updatedContact) {
+    throw createHttpError(404, 'Contact not found or not owned by the user');
+  }
 
   return updatedContact;
 };
 
-export const deleteContact = async (contactId) => {
-  const contact = await Contact.findOneAndDelete({
-    _id: contactId,
-  });
+export const deleteContact = async (contactId, userId) => {
+  const contact = await Contact.findOneAndDelete({ _id: contactId, userId });
+
+  if (!contact) {
+    throw createHttpError(404, 'Contact not found or not owned by the user');
+  }
 
   return contact;
 };
