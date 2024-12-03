@@ -13,7 +13,7 @@ const contactSchema = new Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false, // Необязательно
     },
     phoneNumber: {
       type: String,
@@ -21,8 +21,8 @@ const contactSchema = new Schema(
     },
     isFavourite: {
       type: Boolean,
-      required: true,
-      default: false,
+      required: false, // Необязательно
+      default: false, // Значение по умолчанию
     },
     contactType: {
       type: String,
