@@ -6,6 +6,7 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 
@@ -84,10 +85,12 @@ export const getContactByIdController = async (req, res) => {
 export const createContactController = async (req, res, next) => {
   try {
     console.log('Request body:', req.body);
+    console.log('File data:', req.file);
+
     const { name, phoneNumber, contactType, email, isFavourite } = req.body;
 
     if (!name || !phoneNumber || !contactType) {
-      console.error('Missing required fields');
+      console.error('Validation error: Missing required fields');
       throw createHttpError(
         400,
         'Missing required fields: name, phoneNumber, contactType',
@@ -95,9 +98,14 @@ export const createContactController = async (req, res, next) => {
     }
 
     const userId = req.user?._id;
+
     if (!userId) {
+      console.error('Authentication error: User not authenticated');
       throw createHttpError(401, 'User not authenticated');
     }
+
+    const photo = req.file ? await saveFileToCloudinary(req.file) : null;
+    console.log('Uploaded photo URL:', photo);
 
     const contact = await createContact({
       name,
@@ -106,8 +114,11 @@ export const createContactController = async (req, res, next) => {
       email,
       isFavourite,
       userId,
+      photo,
     });
-    console.log('Contact created:', contact);
+
+    console.log('Contact created successfully:', contact);
+
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
@@ -122,21 +133,26 @@ export const createContactController = async (req, res, next) => {
 export const patchContactController = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const userId = req.user._id;
 
-    if (Object.keys(req.body).length === 0) {
-      throw createHttpError(400, 'No data provided for update');
+    const updatedFields = { ...req.body };
+
+    if (req.file) {
+      updatedFields.photo = await saveFileToCloudinary(req.file);
     }
 
-    const updatedContact = await updateContact(contactId, userId, req.body);
+    const updatedContact = await updateContact(
+      contactId,
+      req.user._id,
+      updatedFields,
+    );
 
     res.status(200).json({
       status: 200,
-      message: 'Successfully patched a contact!',
+      message: 'Contact updated successfully',
       data: updatedContact,
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
