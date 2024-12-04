@@ -14,19 +14,23 @@ import {
   createContactSchema,
   updateContactSchema,
 } from '../validators/contactValidators.js';
+import { upload } from '../middlewares/multer.js';
 
 const router = express.Router();
+
 router.use(authenticate);
 
 router.get('/', ctrlWrapper(getContactsController));
 router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
 router.post(
   '/',
+  upload.single('photo'),
   validateBody(createContactSchema),
   ctrlWrapper(createContactController),
 );
 router.patch(
   '/:contactId',
+  upload.single('photo'),
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(patchContactController),

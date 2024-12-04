@@ -21,7 +21,6 @@ const contactSchema = new Schema(
     },
     isFavourite: {
       type: Boolean,
-      required: false, // Необязательно
       default: false, // Значение по умолчанию
     },
     contactType: {
@@ -34,6 +33,10 @@ const contactSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    photo: {
+      type: String,
+      required: false,
     },
   },
   {
