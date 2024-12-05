@@ -1,0 +1,26 @@
+type: object
+required:
+  - id
+  - name
+  - phoneNumber
+  - contactType
+properties:
+  id:
+    type: string
+    description: Unique identifier for the contact
+  name:
+    type: string
+    description: Name of the contact
+  phoneNumber:
+    type: string
+    description: Phone number of the contact
+  contactType:
+    type: string
+    enum:
+      - personal
+      - work
+      - other
+    description: "Link to contact's photo"
+  photo:
+    type: string
+    description: https://res.cloudinary.com/uqwgdu/image/upload/image.png
