@@ -134,12 +134,15 @@ export const patchContactController = async (req, res, next) => {
   try {
     const { contactId } = req.params;
 
+    // Собираем поля для обновления
     const updatedFields = { ...req.body };
 
+    // Если есть файл, загружаем его на Cloudinary
     if (req.file) {
       updatedFields.photo = await saveFileToCloudinary(req.file);
     }
 
+    // Обновляем контакт
     const updatedContact = await updateContact(
       contactId,
       req.user._id,

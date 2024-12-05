@@ -30,6 +30,7 @@ router.post(
 );
 router.patch(
   '/:contactId',
+  authenticate,
   upload.single('photo'),
   isValidId,
   validateBody(updateContactSchema),
