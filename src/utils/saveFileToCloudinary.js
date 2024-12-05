@@ -11,18 +11,42 @@ cloudinary.v2.config({
   api_secret: env(CLOUDINARY.API_SECRET),
 });
 
-// src/utils/saveFileToCloudinary.js
-
 export const saveFileToCloudinary = async (file) => {
+  console.log('--- Starting Cloudinary Upload ---');
+  console.log('Environment Variables:');
+  console.log({
+    CLOUD_NAME: env(CLOUDINARY.CLOUD_NAME),
+    API_KEY: env(CLOUDINARY.API_KEY),
+    API_SECRET: env(CLOUDINARY.API_SECRET) ? '*****' : null, // скрываем секрет
+  });
+
+  console.log('File details received:', {
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    size: file.size,
+    path: file.path,
+  });
+
   try {
-    console.log('File path for Cloudinary:', file.path);
+    console.log('Uploading file to Cloudinary:', file.path);
     const response = await cloudinary.v2.uploader.upload(file.path);
-    console.log('Cloudinary upload response:', response);
+
+    console.log('Cloudinary upload successful. Response:');
+    console.log(response);
+
+    console.log('Deleting temporary file:', file.path);
     await fs.unlink(file.path);
-    console.log('Temporary file deleted:', file.path);
+
+    console.log('Temporary file successfully deleted:', file.path);
+    console.log('--- Cloudinary Upload Completed ---');
+
     return response.secure_url;
   } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
+    console.error('Error during Cloudinary upload:');
+    console.error('File Path:', file.path);
+    console.error('Error details:', error.message);
+    console.error('Full error object:', error);
+
     throw new Error('Failed to upload file to Cloudinary');
   }
 };
