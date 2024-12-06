@@ -11,7 +11,10 @@ export const SMTP = {
   SMTP_PASSWORD: 'SMTP_PASSWORD',
   SMTP_FROM: 'SMTP_FROM',
 };
-export const TEMP_UPLOAD_DIR = '/tmp';
+export const TEMP_UPLOAD_DIR =
+  process.env.NODE_ENV === 'production'
+    ? '/tmp' // Render или другая облачная платформа
+    : path.join(process.cwd(), 'temp'); // Локальная среда
 
 export const CLOUDINARY = {
   CLOUD_NAME: 'CLOUDINARY_CLOUD_NAME',
