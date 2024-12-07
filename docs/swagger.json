@@ -2,12 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "version": "1.0.0",
-    "title": "<назва вашого додатку>",
+    "title": "Contacts API",
     "license": {
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "description": "<опис вашого додатку>"
+    "description": "API для керування контактами"
   },
   "servers": [
     {
@@ -156,31 +156,37 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "name",
+                  "phoneNumber",
+                  "contactType"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
                     "description": "The name of the contact",
-                    "example": "John Doe"
+                    "example": ""
                   },
                   "phoneNumber": {
                     "type": "string",
                     "description": "The phone number of the contact",
-                    "example": 123456789
+                    "example": ""
                   },
                   "contactType": {
                     "type": "string",
                     "enum": [
-                      "personal",
                       "work",
-                      "other"
+                      "home",
+                      "personal"
                     ],
                     "description": "The type of the contact",
                     "example": "work"
                   },
                   "email": {
                     "type": "string",
+                    "format": "email",
                     "description": "The email of the contact",
-                    "example": "john.doe@example.com"
+                    "example": ""
                   },
                   "isFavourite": {
                     "type": "boolean",
@@ -283,9 +289,33 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Contact"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the contact"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Email of the contact"
+                  },
+                  "contactType": {
+                    "type": "string",
+                    "enum": [
+                      "personal",
+                      "work",
+                      "other"
+                    ],
+                    "description": "Type of the contact"
+                  },
+                  "photo": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Photo file for the contact"
+                  }
+                }
               }
             }
           }
@@ -382,11 +412,12 @@
               "work",
               "other"
             ],
-            "description": "Link to contact's photo"
+            "description": "The type of the contact"
           },
           "photo": {
             "type": "string",
-            "description": "https://res.cloudinary.com/uqwgdu/image/upload/image.png"
+            "format": "binary",
+            "description": "Photo file for the contact"
           }
         }
       }

@@ -11,31 +11,36 @@ requestBody:
     multipart/form-data:
       schema:
         type: object
+        required:
+          - name
+          - phoneNumber
+          - contactType
         properties:
           name:
             type: string
             description: The name of the contact
-            example: John Doe
+            example: '' # Поле остается пустым
           phoneNumber:
             type: string
             description: The phone number of the contact
-            example: +123456789
+            example: '' # Поле остается пустым
           contactType:
             type: string
             enum:
-              - personal
               - work
-              - other
+              - home
+              - personal
             description: The type of the contact
             example: work
           email:
             type: string
+            format: email
             description: The email of the contact
-            example: john.doe@example.com
+            example: '' # Поле остается пустым
           isFavourite:
             type: boolean
             description: Whether the contact is a favourite
-            example: false
+            example: false # Исправлено значение примера
           photo:
             type: string
             format: binary
