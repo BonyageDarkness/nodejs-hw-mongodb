@@ -20,7 +20,8 @@ properties:
       - personal
       - work
       - other
-    description: "Link to contact's photo"
+    description: The type of the contact
   photo:
     type: string
-    description: https://res.cloudinary.com/uqwgdu/image/upload/image.png
+    format: binary
+    description: Photo file for the contact

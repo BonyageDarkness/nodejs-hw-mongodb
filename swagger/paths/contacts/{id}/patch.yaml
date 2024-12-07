@@ -15,9 +15,27 @@ parameters:
 requestBody:
   required: true
   content:
-    application/json:
+    multipart/form-data:
       schema:
-        $ref: '../../../components/schemas/Contact.yaml'
+        type: object
+        properties:
+          name:
+            type: string
+            description: Name of the contact
+          email:
+            type: string
+            description: Email of the contact
+          contactType:
+            type: string
+            enum:
+              - personal
+              - work
+              - other
+            description: Type of the contact
+          photo:
+            type: string
+            format: binary
+            description: Photo file for the contact
 responses:
   '200':
     description: Contact updated successfully
