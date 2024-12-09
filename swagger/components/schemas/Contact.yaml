@@ -1,6 +1,7 @@
 type: object
 required:
-  - id
+  - _id
+  - userId
   - name
   - phoneNumber
   - contactType
@@ -8,6 +9,9 @@ properties:
   id:
     type: string
     description: Unique identifier for the contact
+  userId:
+    type: string
+    description: ID of the user who owns the contact
   name:
     type: string
     description: Name of the contact
