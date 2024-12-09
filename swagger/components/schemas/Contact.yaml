@@ -6,7 +6,7 @@ required:
   - phoneNumber
   - contactType
 properties:
-  id:
+  _id:
     type: string
     description: Unique identifier for the contact
   userId:
